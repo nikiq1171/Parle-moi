@@ -13,7 +13,7 @@ Pronunciation and DELF B1 oral practice app. It runs entirely in your browser: n
 
 1. In the repository, go to **Settings → Pages**.
 2. Under **Build and deployment**, set **Source** to *Deploy from a branch*, branch `main`, folder `/ (root)`, then **Save**.
-3. Wait 1–2 minutes. Your app will be at `https://YOUR-USERNAME.github.io/parle-moi/`.
+3. Wait 1–2 minutes. Your app will be at `https://github.com/nikiq1171/Parle-moi.git`.
 
 ## 3. Add it to your phone
 
