@@ -14,7 +14,7 @@
   --bg:#EEF2F8; --surface:#FFFFFF; --ink:#14213D; --muted:#56657F; --line:#D3DCE9;
   --blue:#23439A; --on-blue:#FFFFFF; --blue-soft:#DEE6F7;
   --ok:#1E7A4F; --ok-soft:#DDF1E6; --miss:#9A4D00; --miss-soft:#FBE7D3;
-  --rec:#B3261E; --on-rec:#FFFFFF;
+  --rec:#B3261E; --on-rec:#FFFFFF; --on-ok:#FFFFFF;
   --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   color-scheme:light;
@@ -24,11 +24,12 @@
     --bg:#0D1424; --surface:#162039; --ink:#E7EDF7; --muted:#9DABC3; --line:#2B3A5A;
     --blue:#93B2F3; --on-blue:#0D1424; --blue-soft:#1F3157;
     --ok:#74D6A4; --ok-soft:#173A2B; --miss:#F3AA62; --miss-soft:#3E2B17;
-    --rec:#F2847A; --on-rec:#1A0E0D;
+    --rec:#F2847A; --on-rec:#1A0E0D; --on-ok:#0D1424;
     color-scheme:dark;
   }
 }
 *{box-sizing:border-box}
+[hidden]{display:none !important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
 .wrap{max-width:660px;margin:0 auto;padding:20px 16px 56px}
 header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
@@ -119,6 +120,85 @@ input[type=range]{width:100%;accent-color:var(--blue)}
 .corr{font-size:.95rem;margin-bottom:8px}
 .corr s{color:var(--miss)}
 .corr b{color:var(--ok);font-weight:600}
+
+/* ---- Parcours ---- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 6px;text-align:center}
+.stat b{display:block;font:600 1.35rem var(--serif);line-height:1.2}
+.stat span{font-size:.74rem;color:var(--muted)}
+.unit-head{background:var(--blue);color:var(--on-blue);border-radius:18px;padding:14px 18px 16px;margin:22px 0 14px}
+.unit-head h2{color:inherit;margin:2px 0 10px}
+.u-top{display:flex;justify-content:space-between;font-size:.85rem;opacity:.85}
+.u-prog{height:6px;border-radius:99px;background:color-mix(in srgb,var(--on-blue) 25%,transparent);overflow:hidden}
+.u-prog i{display:block;height:100%;background:var(--on-blue);border-radius:99px}
+.path{display:flex;flex-direction:column;align-items:center;gap:18px;padding:6px 0 10px}
+.node-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:140px}
+.node{position:relative;width:74px;height:74px;border-radius:50%;border:0;display:grid;place-items:center;font:700 1.5rem var(--serif);box-shadow:0 6px 0 color-mix(in srgb,var(--ink) 22%,transparent)}
+.node:active{transform:translateY(3px);box-shadow:0 3px 0 color-mix(in srgb,var(--ink) 22%,transparent)}
+.node.locked{background:var(--line);color:var(--muted)}
+.node.open{background:var(--blue);color:var(--on-blue)}
+.node.done{background:var(--ok);color:var(--on-ok)}
+.node.skipped{background:var(--ok-soft);color:var(--ok)}
+.node.cp{border-radius:24px;width:84px}
+.node.exam.open{background:var(--rec);color:var(--on-rec)}
+.node.current{outline:4px solid color-mix(in srgb,var(--blue) 40%,transparent);outline-offset:5px;animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{translate:0 -4px}}
+.badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:var(--miss);color:var(--surface);font:700 .75rem var(--sans);display:grid;place-items:center;padding:0 5px}
+.node-label{font-size:.82rem;text-align:center;color:var(--muted);line-height:1.25}
+.node-label b{color:var(--ok)}
+.sheet-bg{position:fixed;inset:0;background:rgba(5,10,20,.45);z-index:40}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-width:660px;margin:0 auto;background:var(--surface);border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));max-height:82vh;overflow-y:auto;box-shadow:0 -10px 30px rgba(0,0,0,.2)}
+.sheet-btns{display:grid;gap:8px;margin-top:16px}
+.sheet-btns .btn{padding:13px}
+.diff{padding-left:18px;margin:6px 0 0}
+.diff li{margin-bottom:8px;font-size:.93rem}
+/* ---- Lecteur ---- */
+.player{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;flex-direction:column}
+.player.open{display:flex}
+.p-top{display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;max-width:660px;width:100%;margin:0 auto}
+.p-close{border:0;background:none;color:var(--muted);font-size:1.9rem;line-height:1;padding:2px 8px}
+.p-bar{flex:1;height:12px;background:var(--line);border-radius:99px;overflow:hidden}
+.p-bar i{display:block;height:100%;width:0;background:var(--ok);border-radius:99px;transition:width .35s}
+.p-body{flex:1;overflow-y:auto;padding:6px 16px 24px;max-width:660px;width:100%;margin:0 auto}
+.p-foot{border-top:1px solid var(--line);background:var(--surface);padding:14px 16px calc(14px + env(safe-area-inset-bottom))}
+.p-foot.ok{background:var(--ok-soft)} .p-foot.bad{background:var(--miss-soft)}
+.p-foot-in{max-width:628px;margin:0 auto}
+.p-fb{display:none;margin-bottom:12px}
+.p-fb p{margin:0 0 4px}
+.fb-title{font-weight:700;font-size:1.1rem}
+.p-foot.ok .fb-title{color:var(--ok)} .p-foot.bad .fb-title{color:var(--miss)}
+.fb-why{color:var(--muted);font-size:.9rem}
+.p-btns{display:flex;gap:8px}
+.p-main{flex:1;padding:15px;border-radius:14px;border:0;background:var(--blue);color:var(--on-blue);font-weight:700;font-size:1.05rem}
+.p-foot.ok .p-main{background:var(--ok);color:var(--on-ok)}
+.p-foot.bad .p-main{background:var(--miss);color:var(--surface)}
+.p-main:disabled{opacity:.4}
+.p-btns .btn{padding:0 16px}
+.p-kicker{color:var(--muted);font-size:.9rem;font-weight:600;margin:10px 0}
+.p-title{font-family:var(--serif);font-size:2rem;line-height:1.15;margin:0 0 12px;font-weight:600}
+.p-q{font-family:var(--serif);font-size:1.4rem;line-height:1.4;margin:0 0 16px}
+.opt.picked{border-color:var(--blue);background:var(--blue-soft)}
+.blank{display:inline-block;min-width:3em;border-bottom:2px solid var(--blue);text-align:center;color:var(--blue);margin:0 4px}
+.accents{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.acc{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;width:40px;height:40px;font-size:1.1rem}
+.tray{min-height:64px;border-bottom:2px solid var(--line);padding:8px 0;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;align-items:center}
+.bank{display:flex;flex-wrap:wrap;gap:8px}
+.tile{border:1px solid var(--line);border-bottom-width:3px;background:var(--surface);color:var(--ink);border-radius:12px;padding:9px 13px;font:1.08rem var(--serif)}
+.word-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px 20px;text-align:center;margin-bottom:16px}
+.wc-fr{font-family:var(--serif);font-size:2.3rem;line-height:1.2;margin:0}
+.wc-en{color:var(--muted);font-size:1.1rem;margin:6px 0 16px}
+.ex{font-family:var(--serif);font-size:1.18rem;margin:0 0 2px;cursor:pointer}
+.ex-row{padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.plan{padding-left:20px;line-height:1.9}
+.passage{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:16px}
+.passage summary{font-weight:600;cursor:pointer}
+.passage p{font-family:var(--serif);font-size:1.05rem;margin:8px 0 0}
+.loading{text-align:center;padding:56px 8px 20px}
+.spin{width:46px;height:46px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--blue);margin:0 auto 22px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.big-score{font-family:var(--serif);font-size:3.4rem;line-height:1.05;margin:4px 0 8px;font-weight:600}
+.center{text-align:center}
+@media (prefers-reduced-motion: reduce){.node.current{animation:none}.spin{animation-duration:3s}.p-bar i{transition:none}}
 @media (max-width:420px){.sentence{font-size:1.38rem}.tab{font-size:.88rem}h1{font-size:1.7rem}}
 </style>
 </head>
@@ -127,7 +207,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
   <header>
     <div>
       <h1>Parle-moi</h1>
-      <p class="sub">Corrige ton accent et prépare l'oral du DELF B1.</p>
+      <p class="sub">Ton chemin vers le DELF B1.</p>
     </div>
     <button class="btn" id="settingsBtn" aria-expanded="false" aria-controls="settings">Réglages</button>
   </header>
@@ -156,14 +236,42 @@ input[type=range]{width:100%;accent-color:var(--blue)}
   <div class="notice" id="noSR">Speech recognition isn't available in this browser. Use Safari on iPhone or Chrome on Android, and allow the microphone.</div>
 
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" aria-selected="true" data-panel="bilan">Bilan</button>
-    <button class="tab" role="tab" aria-selected="false" data-panel="sons">Sons</button>
-    <button class="tab" role="tab" aria-selected="false" data-panel="oral">Oral</button>
-    <button class="tab" role="tab" aria-selected="false" data-panel="ecoute">Écoute</button>
+    <button class="tab" role="tab" aria-selected="true" data-group="parcours">Parcours</button>
+    <button class="tab" role="tab" aria-selected="false" data-group="tests">Tests</button>
+    <button class="tab" role="tab" aria-selected="false" data-group="examen">Examen</button>
+    <button class="tab" role="tab" aria-selected="false" data-group="accent">Accent</button>
   </div>
+  <div class="chips" id="subnav" hidden></div>
+
+  <!-- PARCOURS -->
+  <section class="panel active" id="parcours">
+    <div class="stats" id="pgStats"></div>
+    <div class="notice" id="pgKey" style="margin:0 0 12px">Add your DeepSeek API key in Réglages (top right) to generate lessons.</div>
+    <div id="tree"></div>
+  </section>
+
+  <!-- TESTS -->
+  <section class="panel" id="niveau">
+    <div class="card">
+      <h2>Test de niveau</h2>
+      <p>18 questions from easy A2 to solid B1, with listening. The app then suggests where to start on your path and can skip what you already know.</p>
+      <p class="hint">About 8 minutes.</p>
+      <div class="row"><button class="btn primary" id="lvStart">Commencer le test</button></div>
+      <div id="lvLast"></div>
+    </div>
+  </section>
+  <section class="panel" id="vocab">
+    <div class="card">
+      <h2>Test de vocabulaire</h2>
+      <p>30 words, from very common to rare. The app estimates how many French words you know.</p>
+      <p class="hint">About 4 minutes. A new set of words each time.</p>
+      <div class="row"><button class="btn primary" id="vcStart">Commencer le test</button></div>
+      <div id="vcLast"></div>
+    </div>
+  </section>
 
   <!-- BILAN -->
-  <section class="panel active" id="bilan">
+  <section class="panel" id="bilan">
     <div class="card" id="biIntro">
       <h2>Trouve tes points faibles</h2>
       <p>Read 12 short sentences out loud. Each pair targets a sound English speakers often get wrong. The app checks which key words a French recognizer understands and ranks the sounds you need to work on.</p>
@@ -290,6 +398,14 @@ input[type=range]{width:100%;accent-color:var(--blue)}
     </div>
   </section>
 </div>
+
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Leçon">
+  <div class="p-top"><button class="p-close" id="pClose" aria-label="Fermer">×</button><div class="p-bar"><i id="pBar"></i></div></div>
+  <div class="p-body" id="pBody"></div>
+  <div class="p-foot" id="pFoot"><div class="p-foot-in"><div class="p-fb" id="pFb" aria-live="polite"></div><div class="p-btns"><button class="btn" id="pSkip" hidden></button><button class="p-main" id="pMain">Continuer</button></div></div></div>
+</div>
+<div class="sheet-bg" id="sheetBg" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
 
 <script>
 /* =================== CONTENU =================== */
@@ -539,9 +655,9 @@ function saveApi(){
   API.base = ($("baseIn").value.trim() || "https://api.deepseek.com").replace(/\/+$/,"");
   try{ localStorage.setItem("ds-key", API.key); localStorage.setItem("ds-model", API.model); localStorage.setItem("ds-base", API.base); }catch(e){}
 }
-async function askAI(system, messages, json){
+async function askAI(system, messages, json, maxTokens){
   if (!API.key) throw new Error("NO_KEY");
-  const body = {model:API.model, max_tokens:1000, messages:[{role:"system", content:system}, ...messages]};
+  const body = {model:API.model, max_tokens:maxTokens || 1000, messages:[{role:"system", content:system}, ...messages]};
   if (json && !API.model.includes("reasoner")) body.response_format = {type:"json_object"};
   let res;
   try {
@@ -563,6 +679,7 @@ function apiErr(e){
   if (m === "BAD_KEY") return "DeepSeek rejected the API key. Check it in Réglages.";
   if (m === "NO_CREDIT") return "Your DeepSeek account has no credit left. Top it up on platform.deepseek.com.";
   if (m === "NETWORK") return "Couldn't reach DeepSeek. Check your internet connection.";
+  if (m === "INCOMPLETE" || e instanceof SyntaxError) return "DeepSeek's answer came back incomplete. Try again.";
   return "DeepSeek returned an error (" + m + "). Try again in a moment.";
 }
 $("keySave").onclick = () => { saveApi(); $("keyMsg").textContent = API.key ? "Enregistré." : "Clé effacée."; };
@@ -574,13 +691,22 @@ $("keyTest").onclick = async () => {
 const parseJSON = t => JSON.parse(t.replace(/```json|```/g,"").trim());
 
 /* Onglets */
+const GROUPS = {parcours:[["parcours","Parcours"]], tests:[["niveau","Test de niveau"],["vocab","Vocabulaire"]], examen:[["oral","Oral"],["ecoute","Écoute"]], accent:[["bilan","Bilan"],["sons","Sons"]]};
+const lastPanel = {parcours:"parcours", tests:"niveau", examen:"oral", accent:"bilan"};
+const groupOf = p => Object.keys(GROUPS).find(g => GROUPS[g].some(x => x[0] === p));
 function goTab(name){
   stopAll();
-  document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", x.dataset.panel === name));
+  const g = groupOf(name); lastPanel[g] = name;
+  document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", x.dataset.group === g));
+  const sub = $("subnav");
+  sub.hidden = GROUPS[g].length < 2;
+  sub.innerHTML = GROUPS[g].map(([id,label]) => `<button class="chip" aria-pressed="${id === name}" data-p="${id}">${label}</button>`).join("");
+  sub.querySelectorAll(".chip").forEach(c => c.onclick = () => goTab(c.dataset.p));
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === name));
+  if (name === "parcours" && typeof renderTree === "function") renderTree();
   window.scrollTo({top:0, behavior:"smooth"});
 }
-document.querySelectorAll(".tab").forEach(t => t.onclick = () => goTab(t.dataset.panel));
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => goTab(lastPanel[t.dataset.group]));
 
 /* =================== BILAN =================== */
 const BI_ITEMS = SOUNDS.flatMap(s => s.sents.map(x => ({...x, sound:s.id})));
@@ -906,6 +1032,702 @@ $("ecGen").onclick = async () => {
   b.disabled = false; b.textContent = "Nouveau document";
 };
 
+
+/* =================== PARCOURS : données =================== */
+const UNITS = [
+ {id:1, level:"A2", title:"Moi et mon quotidien", lessons:[
+  {theme:"Se présenter", grammar:"Le présent : être, avoir et les verbes en -er", can:"Introduce yourself, your job and your interests"},
+  {theme:"Ma journée", grammar:"Les verbes pronominaux au présent", can:"Describe your daily routine"},
+  {theme:"La famille", grammar:"Les adjectifs possessifs", can:"Talk about your family and relationships"},
+  {theme:"Le logement", grammar:"Les prépositions de lieu", can:"Describe where you live"},
+  {theme:"Les courses", grammar:"Les articles partitifs et les quantités", can:"Buy food and talk about quantities"}]},
+ {id:2, level:"A2", title:"Sortir et bouger", lessons:[
+  {theme:"Le sport", grammar:"Faire de / jouer à", can:"Talk about sports you play and watch"},
+  {theme:"Les loisirs", grammar:"Aimer, préférer, détester + infinitif", can:"Talk about likes and dislikes"},
+  {theme:"En ville", grammar:"L'impératif", can:"Ask for and give directions"},
+  {theme:"Au restaurant", grammar:"Les pronoms COD (le, la, les)", can:"Order food and talk about dishes"},
+  {theme:"Le week-end dernier", grammar:"Le passé composé avec avoir", can:"Say what you did recently"}]},
+ {id:3, level:"A2+", title:"Raconter", lessons:[
+  {theme:"Les voyages", grammar:"Le passé composé avec être", can:"Tell the story of a trip"},
+  {theme:"Souvenirs d'enfance", grammar:"L'imparfait", can:"Describe how things used to be"},
+  {theme:"La météo et les saisons", grammar:"Le futur proche", can:"Talk about the weather and your plans"},
+  {theme:"La santé", grammar:"Avoir mal à, il faut + infinitif", can:"Explain a health problem at the doctor's"},
+  {theme:"Le shopping", grammar:"Les comparatifs", can:"Compare products and prices"}]},
+ {id:4, level:"B1-", title:"Travail et études", lessons:[
+  {theme:"Le monde du travail", grammar:"Passé composé ou imparfait ?", can:"Tell a story about your work experience"},
+  {theme:"Les études", grammar:"Les pronoms y et en", can:"Talk about your studies and training"},
+  {theme:"Projets d'avenir", grammar:"Le futur simple", can:"Talk about your plans and ambitions"},
+  {theme:"Le sport et la santé", grammar:"Les superlatifs", can:"Discuss the benefits of sport"},
+  {theme:"Voyager autrement", grammar:"Les pronoms relatifs qui, que, où", can:"Describe places and experiences in detail"}]},
+ {id:5, level:"B1", title:"Donner son avis", lessons:[
+  {theme:"Exprimer son opinion", grammar:"Je pense que, à mon avis, selon moi", can:"Give and justify your opinion"},
+  {theme:"L'environnement", grammar:"Il faut que + subjonctif", can:"Discuss environmental problems and solutions"},
+  {theme:"Les écrans et internet", grammar:"Les connecteurs logiques (pourtant, donc, en effet)", can:"Build a structured argument"},
+  {theme:"Le bien-être", grammar:"Le conditionnel pour conseiller", can:"Give advice"},
+  {theme:"La ville de demain", grammar:"L'hypothèse : si + imparfait, conditionnel", can:"Imagine and discuss hypothetical situations"}]},
+ {id:6, level:"B1", title:"Prêt pour le DELF", lessons:[
+  {theme:"Débattre", grammar:"Accord, désaccord et concession (même si)", can:"Take part in a debate"},
+  {theme:"Culture et médias", grammar:"Le pronom relatif dont", can:"Talk about a book, a film or an article"},
+  {theme:"Raconter une expérience", grammar:"Le plus-que-parfait", can:"Tell a detailed personal story"},
+  {theme:"Le travail et la société", grammar:"Le discours rapporté au présent", can:"Report what other people say"},
+  {theme:"Résoudre un problème", grammar:"La politesse et le registre formel", can:"Complain, negotiate and find a solution"}]}
+];
+const NODES = [];
+UNITS.forEach(u => {
+  u.lessons.forEach((l,i) => NODES.push({...l, id:`${u.id}-${i+1}`, num:i+1, unit:u, kind:"lesson"}));
+  NODES.push({id:`${u.id}-cp`, unit:u, kind:"cp", theme:`Bilan de l'unité ${u.id}`});
+});
+NODES.push({id:"exam", unit:UNITS[5], kind:"exam", theme:"Examen blanc DELF B1"});
+
+const SVG = {
+  check:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  cup:'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 21h8M9 18h6"/></svg>',
+  flag:'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'
+};
+const micHTML = (id, label, small) => `<button class="mic${small ? " small" : ""}" id="${id}" data-label="${label}">${SVG.mic}<span class="label">${label}</span></button>`;
+
+/* =================== PARCOURS : état =================== */
+function loadPG(){
+  let v = null; try { v = JSON.parse(localStorage.getItem("parcours-v1")); } catch(e){}
+  return Object.assign({lessons:{}, xp:0, streak:{last:null, count:0}, words:[], vocabEst:null, placed:null}, v || {});
+}
+let PG = loadPG();
+function savePG(){ try { localStorage.setItem("parcours-v1", JSON.stringify(PG)); } catch(e){} }
+const recOf = id => PG.lessons[id] || (PG.lessons[id] = {status:"", best:0, attempts:0, mistakes:[], words:[]});
+const isDone = s => s === "done" || s === "skipped";
+function nodeStatus(n){
+  const r = PG.lessons[n.id];
+  if (r && isDone(r.status)) return r.status;
+  const i = NODES.indexOf(n);
+  if (i === 0) return "open";
+  return isDone(nodeStatus(NODES[i-1])) ? "open" : "locked";
+}
+const dayStr = d => d.toLocaleDateString("en-CA");
+function bumpStreak(){
+  const t = dayStr(new Date()), y = dayStr(new Date(Date.now()-864e5));
+  if (PG.streak.last === t) return;
+  PG.streak.count = PG.streak.last === y ? PG.streak.count + 1 : 1;
+  PG.streak.last = t;
+}
+function streakNow(){
+  const t = dayStr(new Date()), y = dayStr(new Date(Date.now()-864e5));
+  return (PG.streak.last === t || PG.streak.last === y) ? PG.streak.count : 0;
+}
+
+/* =================== PARCOURS : arbre =================== */
+function renderTree(){
+  const cur = NODES.find(n => nodeStatus(n) === "open");
+  const level = cur ? cur.unit.level : "B1";
+  $("pgStats").innerHTML = [[streakNow(),"jours de suite"],[PG.xp,"XP"],[PG.words.length,"mots appris"],[level,"niveau"]]
+    .map(([b,l]) => `<div class="stat"><b>${esc(b)}</b><span>${l}</span></div>`).join("");
+  $("pgKey").classList.toggle("show", !API.key);
+  const offs = [0,58,86,58,0,-58,-86,-58];
+  let html = "";
+  UNITS.forEach(u => {
+    const nodes = NODES.filter(n => n.unit === u && n.kind !== "exam");
+    const done = nodes.filter(n => isDone(nodeStatus(n))).length;
+    html += `<div class="unit-head"><div class="u-top"><span>Unité ${u.id}</span><span>${u.level}</span></div><h2>${esc(u.title)}</h2><div class="u-prog"><i style="width:${Math.round(done/nodes.length*100)}%"></i></div></div><div class="path">`;
+    const list = u.id === 6 ? [...nodes, NODES[NODES.length-1]] : nodes;
+    list.forEach((n,i) => {
+      const st = nodeStatus(n), r = PG.lessons[n.id];
+      const icon = st === "locked" ? SVG.lock : n.kind === "cp" ? SVG.cup : n.kind === "exam" ? SVG.flag : isDone(st) ? SVG.check : n.num;
+      const diff = r && (r.mistakes.length + r.words.length);
+      html += `<div class="node-wrap" style="transform:translateX(${offs[i % offs.length]}px)">
+        <button class="node ${st} ${n.kind}${n === cur ? " current" : ""}" data-id="${n.id}" aria-label="${esc(n.theme)}">${icon}${diff ? `<span class="badge" aria-label="${diff} difficultés">${diff > 9 ? "9+" : diff}</span>` : ""}</button>
+        <span class="node-label">${esc(n.theme)}${r && r.best ? `<br><b>${r.best} %</b>` : ""}</span></div>`;
+    });
+    html += `</div>`;
+  });
+  $("tree").innerHTML = html;
+  $("tree").querySelectorAll(".node").forEach(b => b.onclick = () => openSheet(NODES.find(n => n.id === b.dataset.id)));
+}
+function scrollToCurrent(){
+  const c = $("tree").querySelector(".node.current");
+  if (c) c.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+/* Feuille de détails */
+function closeSheet(){ $("sheet").hidden = true; $("sheetBg").hidden = true; }
+$("sheetBg").onclick = closeSheet;
+function openSheet(n){
+  const st = nodeStatus(n), r = PG.lessons[n.id];
+  let h = `<p class="hint" style="margin:0 0 4px">Unité ${n.unit.id}, niveau ${n.unit.level}</p><h2>${esc(n.theme)}</h2>`;
+  if (n.kind === "lesson") h += `<p><b>Grammaire :</b> ${esc(n.grammar)}</p><p class="hint">Goal: ${esc(n.can)}.</p>`;
+  if (n.kind === "cp") h += `<p>A 12-question test covering the whole unit, with listening and speaking. Score 80 % to unlock the next unit.</p>`;
+  if (n.kind === "exam") h += `<p>Practise the real DELF B1 oral exam (3 parts) and the listening test.</p>`;
+  if (st === "locked" && n.kind !== "exam") h += `<p class="hint">Finish the previous step to unlock this one, or take the level test (Tests tab) to skip ahead.</p>`;
+  if (st === "skipped") h += `<p class="hint">Skipped thanks to the level test. You can still do it.</p>`;
+  if (r && r.attempts) h += `<p>Meilleur score : <b>${r.best} %</b> (${r.attempts} essai${r.attempts > 1 ? "s" : ""})</p>`;
+  if (r && (r.mistakes.length || r.words.length)){
+    h += `<h3>Mes difficultés</h3><ul class="diff">`;
+    r.mistakes.slice(-8).reverse().forEach(m => h += `<li><b>${esc(m.point || "Question")}</b><br><span class="hint">${esc(m.correct)}</span></li>`);
+    if (r.words.length) h += `<li><b>Prononciation</b><br><span class="hint">${esc(r.words.slice(-10).join(", "))}</span></li>`;
+    h += `</ul>`;
+  }
+  const btns = [];
+  if (n.kind === "exam"){
+    btns.push(["Examen oral", () => { closeSheet(); goTab("oral"); }, true]);
+    btns.push(["Compréhension orale", () => { closeSheet(); goTab("ecoute"); }]);
+  } else if (st !== "locked"){
+    const hasDiff = r && (r.mistakes.length || r.words.length);
+    if (n.kind === "lesson"){
+      if (st === "open") btns.push([r && r.draft ? "Continuer la leçon" : "Commencer la leçon", () => startLesson(n, false), true]);
+      else btns.push(["Refaire la leçon", () => startLesson(n, true), !hasDiff]);
+    } else {
+      btns.push([st === "open" ? "Passer le bilan" : "Repasser le bilan", () => startCheckpoint(n), !hasDiff || st === "open"]);
+    }
+    if (hasDiff) btns.unshift(["Réviser mes difficultés", () => startReview(n), true]);
+  }
+  btns.push(["Fermer", closeSheet]);
+  if (!API.key && n.kind !== "exam" && st !== "locked") h += `<p class="notice show" style="margin:0 0 12px">Add your DeepSeek API key in Réglages to generate lessons.</p>`;
+  h += `<div class="sheet-btns">${btns.map((b,i) => `<button class="btn${b[2] ? " primary" : ""}" data-b="${i}">${esc(b[0])}</button>`).join("")}</div>`;
+  $("sheet").innerHTML = h;
+  $("sheet").querySelectorAll("[data-b]").forEach(b => b.onclick = btns[+b.dataset.b][1]);
+  $("sheet").hidden = false; $("sheetBg").hidden = false;
+}
+function needKey(){
+  closeSheet(); closePlayer();
+  $("settings").classList.add("open"); $("settingsBtn").setAttribute("aria-expanded", true);
+  $("keyMsg").textContent = "Add your DeepSeek API key here to generate lessons and tests.";
+  window.scrollTo({top:0, behavior:"smooth"}); setTimeout(() => $("keyIn").focus(), 300);
+}
+
+/* =================== LECTEUR (écran de leçon) =================== */
+const PL = {steps:[], i:0, token:0, final:false};
+function shellOpen(){ $("player").classList.add("open"); document.body.style.overflow = "hidden"; }
+function openPlayer(steps){ PL.steps = steps; PL.i = 0; PL.final = false; shellOpen(); renderStep(); }
+function closePlayer(){
+  PL.token++; stopAll();
+  $("player").classList.remove("open"); document.body.style.overflow = "";
+  renderTree(); renderTests();
+}
+$("pClose").onclick = () => { if (PL.final || !PL.steps.length || confirm("Quitter ? Tu pourras reprendre la leçon plus tard.")) closePlayer(); };
+function resetFoot(){ $("pFoot").className = "p-foot"; $("pFb").innerHTML = ""; $("pFb").style.display = "none"; $("pSkip").hidden = true; }
+function foot(label, fn, enabled = true){ const b = $("pMain"); b.textContent = label; b.disabled = !enabled; b.onclick = fn; }
+function showFb(ok, html){ $("pFoot").className = "p-foot " + (ok ? "ok" : "bad"); $("pFb").innerHTML = html; $("pFb").style.display = "block"; }
+function skipBtn(label, fn){ const b = $("pSkip"); b.hidden = false; b.textContent = label; b.onclick = fn; }
+function renderStep(){
+  stopAll(); resetFoot();
+  $("pBar").style.width = Math.round(PL.i / Math.max(1, PL.steps.length) * 100) + "%";
+  const body = $("pBody"); body.innerHTML = ""; body.scrollTop = 0;
+  PL.steps[PL.i](body);
+}
+function nextStep(){ PL.i++; if (PL.i >= PL.steps.length) return closePlayer(); renderStep(); }
+function showLoading(title, sub){
+  PL.steps = []; shellOpen(); resetFoot();
+  $("pBar").style.width = "3%";
+  $("pBody").innerHTML = `<div class="loading"><div class="spin"></div><h2>${esc(title)}</h2><p class="hint">${esc(sub)}</p></div>`;
+  foot("Patiente…", null, false);
+}
+function showErr(e, retry){
+  resetFoot();
+  $("pBody").innerHTML = `<div class="loading"><h2>Oups</h2><p>${esc(apiErr(e))}</p></div>`;
+  foot("Réessayer", retry); skipBtn("Fermer", closePlayer);
+}
+
+/* Utilitaires d'exercice */
+const normAns = s => String(s).toLowerCase().replace(/[’`]/g,"'").replace(/[.,!?;:«»"()]/g,"").replace(/\s+/g," ").trim();
+const noAcc = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const splitS = t => (String(t).match(/[^.!?]+[.!?»"]*/g) || [t]).map(s => s.trim()).filter(Boolean);
+function correctText(it){
+  if (it.type === "choice" || it.type === "listen") return it.o[it.a];
+  if (it.type === "fill") return it.q.replace("___", it.answer);
+  if (it.type === "order") return it.words.join(" ");
+  return it.fr || "";
+}
+function qText(it){
+  if (it.type === "listen") return "(audio) " + it.audio + " " + it.q;
+  if (it.type === "order") return it.en || "";
+  return it.q || it.fr || "";
+}
+function cleanItems(arr){
+  return (Array.isArray(arr) ? arr : []).filter(it => {
+    if (!it || typeof it !== "object") return false;
+    if (it.type === "choice" || it.type === "listen")
+      return Array.isArray(it.o) && it.o.length >= 2 && Number.isInteger(it.a) && it.a >= 0 && it.a < it.o.length && it.q && (it.type === "choice" || it.audio);
+    if (it.type === "fill") return typeof it.q === "string" && it.q.includes("___") && it.answer;
+    if (it.type === "order") return Array.isArray(it.words) && it.words.length >= 3;
+    if (it.type === "speak") return typeof it.fr === "string" && it.fr.length > 3;
+    return false;
+  });
+}
+function tapSentences(el, text){
+  const ss = splitS(text);
+  el.innerHTML = ss.map((s,i) => `<span class="s" tabindex="0" role="button" data-i="${i}">${esc(s)}</span>`).join(" ");
+  el.querySelectorAll(".s").forEach(x => {
+    const go = () => { el.querySelectorAll(".s").forEach(y => y.classList.toggle("sel", y === x)); speak(ss[+x.dataset.i]); };
+    x.onclick = go; x.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } };
+  });
+}
+
+/* Une étape = un exercice */
+function itemStep(it, c){ return body => {
+  const fin = (correct, your, extra = "") => {
+    c.results.push({it, correct, your});
+    if (correct === null) return nextStep();
+    const corr = correctText(it);
+    showFb(correct, `<p class="fb-title">${correct ? "Correct !" : "Pas tout à fait."}</p>${!correct && corr ? `<p>Bonne réponse : <i>${esc(corr)}</i></p>` : ""}${extra}${it.why ? `<p class="fb-why">${esc(it.why)}</p>` : ""}`);
+    $("pSkip").hidden = true;
+    foot("Continuer", nextStep);
+  };
+  const t = it.type;
+  if (t === "choice" || t === "listen"){
+    const head = t === "listen"
+      ? `<p class="p-kicker">Écoute et réponds</p><div class="row" style="margin:0 0 16px"><button class="btn primary" id="itPlay">Écouter</button><button class="btn" id="itSlow">Lentement</button></div>`
+      : `<p class="p-kicker">${esc(c.kicker || "Choisis la bonne réponse")}</p>${it.passage ? `<details class="passage" open><summary>${esc(it.passageTitle || "Le texte")}</summary><p>${esc(it.passage)}</p></details>` : ""}`;
+    body.innerHTML = head + `<p class="p-q">${esc(it.q)}</p><div class="opts">${it.o.map((o,i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>`;
+    if (t === "listen"){ $("itPlay").onclick = () => speak(it.audio); $("itSlow").onclick = () => speak(it.audio, true); speak(it.audio); }
+    let sel = null;
+    const check = () => {
+      body.querySelectorAll(".opt").forEach(x => { x.disabled = true; x.classList.remove("picked"); if (+x.dataset.i === it.a) x.classList.add("correct"); else if (+x.dataset.i === sel) x.classList.add("wrong"); });
+      fin(sel === it.a, it.o[sel]);
+    };
+    body.querySelectorAll(".opt").forEach(b => b.onclick = () => { sel = +b.dataset.i; body.querySelectorAll(".opt").forEach(x => x.classList.toggle("picked", x === b)); foot("Vérifier", check, true); });
+    foot("Vérifier", check, false);
+    if (c.idk) skipBtn("Je ne sais pas", () => { body.querySelectorAll(".opt").forEach(x => { x.disabled = true; if (+x.dataset.i === it.a) x.classList.add("correct"); }); fin(false, "—"); });
+  }
+  else if (t === "fill"){
+    const parts = it.q.split("___");
+    body.innerHTML = `<p class="p-kicker">Complète la phrase</p><p class="p-q">${esc(parts[0])}<span class="blank">?</span>${esc(parts.slice(1).join("___"))}</p>${it.en ? `<p class="hint">${esc(it.en)}</p>` : ""}
+      <input type="text" id="itIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Ta réponse" style="margin-top:8px;font-size:1.1rem">
+      <div class="accents">${["é","è","ê","à","â","ç","ù","î","ô","œ"].map(a => `<button class="acc" data-a="${a}">${a}</button>`).join("")}</div>`;
+    const inp = $("itIn");
+    let done = false;
+    const check = () => {
+      if (done || !inp.value.trim()) return; done = true; inp.disabled = true;
+      const answers = [it.answer, ...(Array.isArray(it.alt) ? it.alt : [])].map(normAns);
+      const v = normAns(inp.value);
+      const exact = answers.includes(v), near = !exact && answers.map(noAcc).includes(noAcc(v));
+      body.querySelector(".blank").textContent = it.answer;
+      fin(exact || near, inp.value, near ? `<p>Attention aux accents : <i>${esc(it.answer)}</i></p>` : "");
+    };
+    inp.oninput = () => foot("Vérifier", check, !!inp.value.trim());
+    inp.onkeydown = e => { if (e.key === "Enter") check(); };
+    body.querySelectorAll(".acc").forEach(b => { b.onmousedown = e => e.preventDefault(); b.onclick = () => { if (done) return; const s = inp.selectionStart ?? inp.value.length, en = inp.selectionEnd ?? s; inp.setRangeText(b.dataset.a, s, en, "end"); inp.focus(); inp.oninput(); }; });
+    foot("Vérifier", check, false);
+  }
+  else if (t === "order"){
+    const words = it.words.map(String);
+    let bank = shuffle(words.map((w,i) => i)), n = 0;
+    while (n++ < 6 && bank.every((v,i) => v === i)) bank = shuffle(bank);
+    let ans = [], locked = false;
+    body.innerHTML = `<p class="p-kicker">Remets les mots dans l'ordre</p><p class="p-q" style="font-family:var(--sans);font-size:1.1rem">${esc(it.en || "")}</p><div class="tray" id="tray"></div><div class="bank" id="bank"></div>`;
+    const check = () => { locked = true; const yours = ans.map(k => words[k]).join(" "); fin(normAns(yours) === normAns(words.join(" ")), yours); };
+    const draw = () => {
+      $("tray").innerHTML = ans.map((k,j) => `<button class="tile" data-j="${j}">${esc(words[k])}</button>`).join("") || `<span class="hint">Tap the words below in the right order</span>`;
+      $("bank").innerHTML = bank.map((k,j) => `<button class="tile" data-j="${j}">${esc(words[k])}</button>`).join("");
+      $("tray").querySelectorAll(".tile").forEach(b => b.onclick = () => { if (locked) return; bank.push(ans.splice(+b.dataset.j,1)[0]); draw(); });
+      $("bank").querySelectorAll(".tile").forEach(b => b.onclick = () => { if (locked) return; ans.push(bank.splice(+b.dataset.j,1)[0]); draw(); });
+      foot("Vérifier", check, bank.length === 0);
+    };
+    draw();
+  }
+  else if (t === "speak"){
+    body.innerHTML = `<p class="p-kicker">Lis à voix haute</p><p class="sentence" id="itS"></p><div class="row" style="margin-top:0"><button class="btn" id="itPlay">Modèle</button><button class="btn" id="itSlow">Lentement</button></div>${micHTML("itMic","Parler")}<div class="result" id="itRes" aria-live="polite"></div>`;
+    renderWords($("itS"), it.fr, null);
+    $("itPlay").onclick = () => speak(it.fr); $("itSlow").onclick = () => speak(it.fr, true);
+    skipBtn("Passer", () => fin(null));
+    foot("Parle d'abord", null, false);
+    if (!SR){ $("itRes").innerHTML = `<p class="hint" style="margin:0">Speech recognition isn't available in this browser, so this exercise is skipped.</p>`; $("itRes").classList.add("show"); foot("Continuer", () => fin(null)); }
+    $("itMic").onclick = () => listen($("itMic"), (alts, err) => {
+      if (!alts) return showError($("itRes"), err || "no-speech");
+      const res = compare(it.fr, alts);
+      renderWords($("itS"), it.fr, res.status);
+      const missed = it.fr.split(" ").filter((w,i) => res.status[i] === "miss").map(w => w.replace(/[.,!?;:«»"]/g,"")).filter(w => w.length > 2);
+      const ok = res.pct >= 70;
+      showResult($("itRes"), res);
+      skipBtn("Réessayer", renderStep);
+      foot("Continuer", () => { c.results.push({it, correct:ok, your:res.heard}); if (c.missed) c.missed.push(...missed); nextStep(); });
+    }, txt => showLive($("itRes"), txt));
+  }
+}; }
+
+/* Étapes d'apprentissage */
+const sectionStep = (title, sub, btn = "C'est parti") => body => {
+  body.innerHTML = `<div class="loading"><h1 class="p-title">${esc(title)}</h1><p>${esc(sub)}</p></div>`;
+  foot(btn, nextStep);
+};
+const introStep = (n, A) => body => {
+  body.innerHTML = `<p class="p-kicker">Unité ${n.unit.id}, niveau ${n.unit.level}</p><h1 class="p-title">${esc(n.theme)}</h1><p>${esc(A.intro || n.can)}</p>
+    <ul class="plan"><li>${A.vocab.length} new words</li><li>Grammar: ${esc((A.grammar && A.grammar.title) || n.grammar)}</li><li>Listening and reading</li><li>Speaking</li><li>Exercises, then a short test (80 % to pass)</li></ul>`;
+  foot("Commencer", nextStep);
+};
+const vocabStep = (v, i, total) => body => {
+  body.innerHTML = `<p class="p-kicker">Mot nouveau ${i+1} sur ${total}</p>
+    <div class="word-card"><p class="wc-fr">${esc(v.fr)}</p><p class="wc-en">${esc(v.en || "")}</p><button class="btn" id="wcHear">Écouter</button></div>
+    ${v.ex ? `<p class="ex" id="wcEx" role="button" tabindex="0">${esc(v.ex)}</p><p class="hint">${esc(v.ex_en || "")}</p>` : ""}
+    <div class="row">${micHTML("wcMic","Dis le mot",true)}</div><div class="result" id="wcRes" aria-live="polite"></div>`;
+  speak(v.fr);
+  $("wcHear").onclick = () => speak(v.fr);
+  if (v.ex) $("wcEx").onclick = () => speak(v.ex);
+  $("wcMic").onclick = () => listen($("wcMic"), (alts, err) => {
+    if (!alts) return showError($("wcRes"), err || "no-speech");
+    showResult($("wcRes"), compare(v.fr, alts));
+  }, t => showLive($("wcRes"), t));
+  foot("Continuer", nextStep);
+};
+const grammarStep = g => body => {
+  body.innerHTML = `<p class="p-kicker">Grammaire</p><h1 class="p-title" style="font-size:1.6rem">${esc(g.title || "")}</h1>
+    ${String(g.explain || "").split(/\n+/).map(p => `<p>${esc(p)}</p>`).join("")}
+    <h3>Exemples</h3>${(g.examples || []).map((e,i) => `<div class="ex-row" role="button" tabindex="0" data-i="${i}"><p class="ex">${esc(e.fr)}</p><p class="hint">${esc(e.en || "")}</p></div>`).join("")}
+    <p class="hint">Tap an example to hear it.</p>`;
+  body.querySelectorAll(".ex-row").forEach(r => r.onclick = () => speak(g.examples[+r.dataset.i].fr));
+  foot("Continuer", nextStep);
+};
+const listenIntroStep = L => body => {
+  body.innerHTML = `<p class="p-kicker">Écoute</p><h1 class="p-title" style="font-size:1.6rem">Compréhension orale</h1><p>${esc(L.intro || "")}</p>
+    <div class="row"><button class="btn primary" id="liP">Écouter</button><button class="btn" id="liS">Lentement</button></div>
+    <p class="hint" style="margin-top:14px">Listen as many times as you need, then answer the questions. You'll see the transcript afterwards.</p>`;
+  $("liP").onclick = () => speak(L.text); $("liS").onclick = () => speak(L.text, true);
+  foot("Répondre aux questions", nextStep);
+};
+const transcriptStep = L => body => {
+  body.innerHTML = `<p class="p-kicker">Transcription</p><p class="text" id="trT"></p><p class="hint" style="margin-top:12px">Tap a sentence to hear it again and repeat it out loud.</p>`;
+  tapSentences($("trT"), L.text);
+  foot("Continuer", nextStep);
+};
+const readStep = R => body => {
+  body.innerHTML = `<p class="p-kicker">Lecture</p><h1 class="p-title" style="font-size:1.6rem">${esc(R.title || "")}</h1><p class="text" id="rdT2"></p><p class="hint" style="margin-top:12px">Tap a sentence to hear it.</p>`;
+  tapSentences($("rdT2"), R.text);
+  foot("Répondre aux questions", nextStep);
+};
+const openSpeakStep = sp => body => {
+  body.innerHTML = `<p class="p-kicker">À toi de parler</p><p class="p-q">${esc(sp.prompt)}</p><p class="hint">${esc(sp.prompt_en || "")}</p>
+    <p class="hint">Answer out loud in 3 to 5 sentences. Tap the mic, speak, then tap again when you've finished.</p>
+    ${micHTML("osMic","Répondre")}<div class="live" id="osLive"></div><div id="osFb"></div>`;
+  foot("Continuer", nextStep); skipBtn("Passer", nextStep);
+  $("osMic").onclick = () => listenLong($("osMic"), t => { $("osLive").textContent = t; $("osLive").classList.add("show"); }, async (text, err) => {
+    if (!text){ $("osFb").innerHTML = `<p class="hint">${esc(errMsg(err || "no-speech"))}</p>`; return; }
+    $("osLive").textContent = text; $("osLive").classList.add("show");
+    $("osFb").innerHTML = `<p class="hint">Analyse en cours…</p>`;
+    try {
+      const fb = parseJSON(await askAI(`You are a friendly French teacher. Always answer with valid JSON only.`, [{role:"user", content:
+        `The learner (target: DELF B1) answered this question out loud: "${sp.prompt}". Their answer is a speech-recognition transcript, so ignore punctuation and obvious transcription errors.\nAnswer: "${text}"\nReturn JSON {"feedback":"2 or 3 sentences in English: what was good and the one thing to improve","corrected":"their answer rewritten in correct, natural French, keeping their ideas"}`}], true, 800));
+      $("osFb").innerHTML = `<div class="result show"><p>${esc(fb.feedback || "")}</p><p class="hint" style="margin:10px 0 4px">Version corrigée :</p><p class="ex">${esc(fb.corrected || "")}</p><button class="btn" id="osHear">Écouter</button></div>`;
+      $("osHear").onclick = () => speak(fb.corrected || "");
+    } catch(e){ $("osFb").innerHTML = `<p class="hint">${esc(apiErr(e))}</p>`; }
+  });
+};
+
+/* Enregistrer les difficultés */
+function addMistakes(r, results){
+  results.filter(x => x.correct === false && x.it.type !== "speak").forEach(x => {
+    const m = {point: x.it.point || "", q: qText(x.it), correct: correctText(x.it)};
+    if (!r.mistakes.some(y => y.q === m.q)) r.mistakes.push(m);
+  });
+  r.mistakes = r.mistakes.slice(-30);
+}
+function addWords(r, list){
+  (list || []).forEach(w => { const k = w.toLowerCase(); if (!r.words.includes(k)) r.words.push(k); });
+  r.words = r.words.slice(-20);
+}
+const score = results => { const v = results.filter(x => x.correct !== null); return v.length ? Math.round(v.filter(x => x.correct).length / v.length * 100) : 0; };
+function resultHTML(pct, pass, xp, wrongAll, extra = ""){
+  const seen = new Set(), wrong = wrongAll.filter(x => { const k = correctText(x.it); if (seen.has(k)) return false; seen.add(k); return true; });
+  return `<div class="center"><p class="p-kicker">${pass ? "Réussi !" : "Pas encore…"}</p><p class="big-score">${pct} %</p>
+    <p class="hint">${pass ? "" : "You need 80 % to pass. "}+${xp} XP</p></div>${extra}
+    ${wrong.length ? `<h3>À revoir</h3><ul class="diff">${wrong.slice(0,6).map(x => `<li><b>${esc(x.it.point || "Question")}</b><br><span class="hint">${esc(correctText(x.it))}</span></li>`).join("")}</ul><p class="hint">These are saved in "Mes difficultés" for this lesson.</p>` : ""}`;
+}
+
+/* =================== GÉNÉRATION =================== */
+const LESSON_SYS = `You are an expert teacher of French as a foreign language. You create short, engaging lessons (10 to 15 minutes) for an adult English speaker from Canada who is preparing for the DELF B1. Use standard France French, natural and correct. All explanations, instructions and translations are in English. Always answer with valid JSON only.`;
+const TEST_SYS = `You are an expert teacher of French as a foreign language who writes exercises and tests for an adult English speaker preparing for the DELF B1. Use standard France French. Explanations are in English. Always answer with valid JSON only.`;
+const ITEM_SCHEMA = `Item formats (use exactly these keys):
+- {"type":"choice","q":"question or sentence in French, may contain ___","o":["3 or 4 options"],"a":index of the correct option,"point":"short label of what is tested","why":"one short English sentence explaining the answer"}
+- {"type":"fill","q":"French sentence containing ___ where ONE word or short expression is missing","en":"English translation of the complete sentence","answer":"the missing text exactly","alt":["other acceptable answers, may be empty"],"point":"...","why":"..."}
+- {"type":"order","en":"English sentence","words":["its French translation split into words, IN THE CORRECT ORDER, punctuation attached to words"],"point":"...","why":"..."}
+- {"type":"listen","audio":"one or two French sentences that will be read aloud (the learner does not see them)","q":"question in French about what was heard","o":["3 options"],"a":index,"point":"...","why":"..."}
+- {"type":"speak","fr":"a French sentence of 6 to 14 words for the learner to read aloud","point":"prononciation"}
+Rules: exactly one correct answer per item, no ambiguity; for fill items the English translation must make the answer unique; write numbers in words; vary the position of the correct option.`;
+const diffNote = u => `Difficulty: unit ${u.id} of 6 on the path from A2 to B1 (unit 1 = easy A2, unit 6 = solid B1). Target level: ${u.level}.`;
+
+async function genA(n, r){
+  const weak = (r.mistakes || []).slice(-8).map(m => m.point).filter(Boolean);
+  const prompt = `Create lesson ${n.num} of unit ${n.unit.id} "${n.unit.title}".
+Theme: ${n.theme}
+Grammar point: ${n.grammar}
+Goal: ${n.can}
+${diffNote(n.unit)}
+The learner already knows these words, do not teach them again: ${PG.words.slice(-80).join(", ") || "none"}.
+${weak.length ? `Last time the learner struggled with: ${weak.join("; ")}. Give these extra attention.` : ""}
+Return JSON with exactly these keys:
+{"intro":"one or two English sentences: what the learner will be able to do",
+ "vocab":[{"fr":"word or expression (nouns with le/la/l'/un/une)","en":"English meaning","ex":"short French example sentence","ex_en":"English translation"}],
+ "grammar":{"title":"name of the grammar point in French","explain":"clear explanation in English, 4 to 6 sentences: the rule, how to form it, and the most common mistake English speakers make","examples":[{"fr":"...","en":"..."}]},
+ "listening":{"intro":"English: who is speaking and in what situation","text":"French text of 4 to 6 sentences that will be read aloud, using the new words and the grammar point","questions":[{"q":"question in French","o":["3 options in French"],"a":0}]},
+ "reading":{"title":"French title","text":"French text of 90 to 150 words using the new words and the grammar point","questions":[{"q":"question in French","o":["3 options in French"],"a":0}]},
+ "speaking":{"sentences":["French sentence to read aloud"],"prompt":"open question in French, answerable in 3 to 5 sentences","prompt_en":"English translation"}}
+Exactly 8 vocab items, 3 or 4 grammar examples, 2 listening questions, 2 reading questions, 3 speaking sentences. Vary the position of correct answers.`;
+  const A = parseJSON(await askAI(LESSON_SYS, [{role:"user", content:prompt}], true, 4000));
+  if (!Array.isArray(A.vocab) || A.vocab.length < 4 || !A.grammar || !A.listening || !A.listening.text || !A.reading || !A.reading.text) throw new Error("INCOMPLETE");
+  const okQ = q => q && Array.isArray(q.o) && Number.isInteger(q.a) && q.a >= 0 && q.a < q.o.length;
+  A.listening.questions = (A.listening.questions || []).filter(okQ);
+  A.reading.questions = (A.reading.questions || []).filter(okQ);
+  A.speaking = A.speaking || {};
+  A.speaking.sentences = (A.speaking.sentences || []).filter(s => typeof s === "string");
+  A.vocab = A.vocab.filter(v => v && v.fr);
+  return A;
+}
+async function genB(n, A){
+  const prompt = `Lesson: unit ${n.unit.id}, "${n.theme}". ${diffNote(n.unit)}
+Vocabulary taught: ${A.vocab.map(v => v.fr).join(", ")}.
+Grammar taught: ${A.grammar.title || n.grammar}.
+Create practice exercises and a final quiz that test exactly this vocabulary and grammar.
+${ITEM_SCHEMA}
+Return {"practice":[8 items: 3 choice, 3 fill, 2 order],"quiz":[10 items: 3 choice, 3 fill, 1 order, 2 listen, 1 speak]}.
+Quiz items must be different from practice items. For "point", use either a word from the vocabulary list or the grammar point name.`;
+  const B = parseJSON(await askAI(TEST_SYS, [{role:"user", content:prompt}], true, 4000));
+  B.practice = cleanItems(B.practice); B.quiz = cleanItems(B.quiz);
+  if (B.quiz.length < 6) throw new Error("INCOMPLETE");
+  return B;
+}
+
+/* =================== LEÇON =================== */
+async function startLesson(n, fresh){
+  closeSheet();
+  if (!API.key) return needKey();
+  const r = recOf(n.id);
+  if (fresh) delete r.draft;
+  if (r.draft && r.draft.A){ shellOpen(); return runLesson(n, r.draft.A, r.draft.B ? Promise.resolve(r.draft.B) : null); }
+  showLoading("Ta leçon se prépare…", "DeepSeek is writing a new lesson for you. This takes 20 to 40 seconds.");
+  const tok = ++PL.token;
+  try {
+    const A = await genA(n, r);
+    if (tok !== PL.token) return;
+    r.draft = {A}; savePG();
+    runLesson(n, A, null);
+  } catch(e){ if (tok === PL.token) showErr(e, () => startLesson(n, fresh)); }
+}
+function runLesson(n, A, pB){
+  const r = recOf(n.id);
+  const getB = () => genB(n, A).then(B => { if (r.draft) { r.draft.B = B; savePG(); } return B; });
+  let promiseB = pB || getB();
+  promiseB.catch(() => {});
+  const ctx = {comp:{results:[]}, practice:{results:[]}, quiz:{results:[]}, speak:{results:[], missed:[]}};
+  const steps = [introStep(n, A)];
+  A.vocab.forEach((v,i) => steps.push(vocabStep(v, i, A.vocab.length)));
+  steps.push(grammarStep(A.grammar));
+  steps.push(listenIntroStep(A.listening));
+  A.listening.questions.forEach(q => steps.push(itemStep({type:"listen", audio:A.listening.text, q:q.q, o:q.o, a:q.a, point:"Compréhension orale"}, ctx.comp)));
+  steps.push(transcriptStep(A.listening));
+  steps.push(readStep(A.reading));
+  A.reading.questions.forEach(q => steps.push(itemStep({type:"choice", q:q.q, o:q.o, a:q.a, point:"Compréhension écrite", passage:A.reading.text, passageTitle:A.reading.title}, ctx.comp)));
+  A.speaking.sentences.forEach(s => steps.push(itemStep({type:"speak", fr:s, point:"prononciation"}, ctx.speak)));
+  if (A.speaking.prompt) steps.push(openSpeakStep(A.speaking));
+  const waitB = body => {
+    body.innerHTML = `<div class="loading"><div class="spin"></div><h2>Préparation des exercices…</h2><p class="hint">Almost ready.</p></div>`;
+    foot("Patiente…", null, false);
+    const tok = PL.token, at = PL.i;
+    promiseB.then(B => {
+      if (tok !== PL.token || PL.i !== at) return;
+      PL.steps.splice(at + 1, 0,
+        sectionStep("Entraînement", "Practise what you just learned. Mistakes here don't count towards your score, but they're saved as difficulties."),
+        ...B.practice.map(it => itemStep(it, ctx.practice)),
+        ...quizSteps(n, A, shuffle(B.quiz.slice()), ctx));
+      nextStep();
+    }).catch(e => {
+      if (tok !== PL.token || PL.i !== at) return;
+      showErr(e, () => { promiseB = getB(); promiseB.catch(() => {}); renderStep(); });
+    });
+  };
+  steps.push(waitB);
+  openPlayer(steps);
+}
+function quizSteps(n, A, quiz, ctx){
+  return [sectionStep("Petit test", `${quiz.length} questions. Score 80 % or more to complete the lesson.`),
+          ...quiz.map(it => itemStep(it, ctx.quiz)),
+          lessonResultStep(n, A, quiz, ctx)];
+}
+const lessonResultStep = (n, A, quiz, ctx) => body => {
+  PL.final = true;
+  const pct = score(ctx.quiz.results), pass = pct >= 80, r = recOf(n.id);
+  r.attempts++; r.best = Math.max(r.best, pct);
+  const all = [...ctx.comp.results, ...ctx.practice.results, ...ctx.quiz.results];
+  addMistakes(r, all); addWords(r, ctx.speak.missed);
+  let xp = 5;
+  if (pass){
+    xp = r.status === "done" ? 10 : 20 + Math.round(pct / 10);
+    r.status = "done"; delete r.draft;
+    A.vocab.forEach(v => { if (!PG.words.includes(v.fr)) PG.words.push(v.fr); });
+  }
+  PG.xp += xp; bumpStreak(); savePG();
+  const wrong = [...ctx.practice.results, ...ctx.quiz.results].filter(x => x.correct === false);
+  body.innerHTML = resultHTML(pct, pass, xp, wrong, ctx.speak.missed.length ? `<p class="hint" style="margin-top:14px">Words to practise saying: ${esc([...new Set(ctx.speak.missed)].join(", "))}</p>` : "");
+  if (pass) foot("Terminer", closePlayer);
+  else {
+    foot("Refaire le test", () => {
+      ctx.quiz.results = []; ctx.practice.results = []; ctx.comp.results = []; ctx.speak.results = []; ctx.speak.missed = [];
+      openPlayer(quizSteps(n, A, shuffle(quiz.slice()), ctx));
+    });
+    skipBtn("Plus tard", closePlayer);
+  }
+};
+
+/* =================== RÉVISION DES DIFFICULTÉS =================== */
+async function startReview(n){
+  closeSheet();
+  if (!API.key) return needKey();
+  const r = recOf(n.id);
+  showLoading("Révision de tes difficultés…", "Creating exercises based on your mistakes.");
+  const tok = ++PL.token;
+  const where = n.kind === "lesson" ? `the lesson "${n.theme}" (grammar: ${n.grammar})` : `the end-of-unit test of unit ${n.unit.id} "${n.unit.title}"`;
+  const prompt = `The learner made these mistakes in ${where}. ${diffNote(n.unit)}
+${r.mistakes.slice(-12).map(m => `- point: ${m.point || "?"} | question: ${m.q} | correct answer: ${m.correct}`).join("\n") || "(none)"}
+${r.words.length ? `Words they pronounced unclearly: ${r.words.slice(-6).join(", ")}.` : ""}
+Create 8 new, different exercises that practise exactly these weak points at the same difficulty. Reuse the exact "point" labels given above.
+${r.words.length ? `Also add up to 3 "speak" items, each containing one of the unclear words, and set their "point" to that word.` : ""}
+${ITEM_SCHEMA}
+Return {"items":[...]}`;
+  try {
+    const items = cleanItems(parseJSON(await askAI(TEST_SYS, [{role:"user", content:prompt}], true, 3500)).items);
+    if (items.length < 3) throw new Error("INCOMPLETE");
+    if (tok !== PL.token) return;
+    const c = {results:[], missed:[]};
+    openPlayer([sectionStep("Révision", `${items.length} exercises on your weak points. Each point you get right is removed from your list.`), ...items.map(it => itemStep(it, c)), reviewResultStep(n, c)]);
+  } catch(e){ if (tok === PL.token) showErr(e, () => startReview(n)); }
+}
+const reviewResultStep = (n, c) => body => {
+  PL.final = true;
+  const r = recOf(n.id), pct = score(c.results);
+  c.results.filter(x => x.correct === true).forEach(x => {
+    const p = String(x.it.point || "").toLowerCase().trim();
+    if (!p) return;
+    r.mistakes = r.mistakes.filter(m => String(m.point).toLowerCase().trim() !== p);
+    r.words = r.words.filter(w => w !== p);
+  });
+  addMistakes(r, c.results);
+  PG.xp += 10; bumpStreak(); savePG();
+  const left = r.mistakes.length + r.words.length;
+  body.innerHTML = resultHTML(pct, true, 10, c.results.filter(x => x.correct === false),
+    `<p class="center" style="margin-top:12px">${left ? `${left} difficult${left > 1 ? "ies" : "y"} left for this lesson.` : "No difficulties left for this lesson. Bravo !"}</p>`);
+  body.querySelector(".p-kicker").textContent = "Révision terminée";
+  foot("Terminer", closePlayer);
+};
+
+/* =================== BILAN D'UNITÉ =================== */
+async function startCheckpoint(n){
+  closeSheet();
+  if (!API.key) return needKey();
+  showLoading("Bilan de l'unité…", "Creating your end-of-unit test.");
+  const tok = ++PL.token, u = n.unit;
+  const weak = u.lessons.flatMap((l,i) => ((PG.lessons[`${u.id}-${i+1}`] || {}).mistakes || []).slice(-3).map(m => m.point)).filter(Boolean);
+  const prompt = `Create the end-of-unit test for unit ${u.id} of 6, "${u.title}". ${diffNote(u)}
+It covers these lessons: ${u.lessons.map(l => `${l.theme} (${l.grammar})`).join("; ")}.
+${weak.length ? `Include some items on these weak points of the learner: ${[...new Set(weak)].join("; ")}.` : ""}
+Balance the items across the lessons; make them slightly harder than the lessons.
+${ITEM_SCHEMA}
+Return {"items":[12 items: 3 choice, 3 fill, 2 order, 3 listen, 1 speak]}`;
+  try {
+    const items = shuffle(cleanItems(parseJSON(await askAI(TEST_SYS, [{role:"user", content:prompt}], true, 4000)).items));
+    if (items.length < 8) throw new Error("INCOMPLETE");
+    if (tok !== PL.token) return;
+    runCheckpoint(n, items);
+  } catch(e){ if (tok === PL.token) showErr(e, () => startCheckpoint(n)); }
+}
+function runCheckpoint(n, items){
+  const c = {results:[], missed:[]};
+  openPlayer([sectionStep(`Bilan de l'unité ${n.unit.id}`, `${items.length} questions on the whole unit. Score 80 % to unlock the next unit.`), ...items.map(it => itemStep(it, c)), cpResultStep(n, items, c)]);
+}
+const cpResultStep = (n, items, c) => body => {
+  PL.final = true;
+  const r = recOf(n.id), pct = score(c.results), pass = pct >= 80;
+  r.attempts++; r.best = Math.max(r.best, pct);
+  addMistakes(r, c.results); addWords(r, c.missed);
+  let xp = 5;
+  if (pass){ xp = r.status === "done" ? 10 : 40; r.status = "done"; }
+  PG.xp += xp; bumpStreak(); savePG();
+  body.innerHTML = resultHTML(pct, pass, xp, c.results.filter(x => x.correct === false),
+    pass && n.unit.id < 6 ? `<p class="center" style="margin-top:12px">Unit ${n.unit.id + 1} is unlocked.</p>` : pass ? `<p class="center" style="margin-top:12px">You've finished the path. Time for the mock exam!</p>` : "");
+  if (pass) foot("Terminer", closePlayer);
+  else { foot("Refaire le bilan", () => runCheckpoint(n, shuffle(items.slice()))); skipBtn("Plus tard", closePlayer); }
+};
+
+/* =================== TESTS =================== */
+function renderTests(){
+  if (PG.placed){
+    const u = UNITS[PG.placed.unit - 1];
+    $("lvLast").innerHTML = `<h3>Dernier résultat</h3><p>Recommended start: <b>Unité ${u.id}, ${esc(u.title)}</b> (${u.level}), on ${esc(new Date(PG.placed.date).toLocaleDateString("fr-FR", {day:"numeric", month:"long"}))}.</p>`;
+  }
+  if (PG.vocabEst){
+    $("vcLast").innerHTML = `<h3>Dernier résultat</h3><p>About <b>${PG.vocabEst.est.toLocaleString("fr-FR")} words</b>, on ${esc(new Date(PG.vocabEst.date).toLocaleDateString("fr-FR", {day:"numeric", month:"long"}))}.</p>`;
+  }
+}
+$("lvStart").onclick = async function startLevel(){
+  if (!API.key) return needKey();
+  showLoading("Test de niveau…", "Creating your placement test.");
+  const tok = ++PL.token;
+  const prompt = `Create a French placement test with 18 items, exactly 3 per level:
+level 1 = easy A2 (présent, articles, everyday vocabulary); level 2 = A2 (passé composé with avoir, possessives, imperative, object pronouns); level 3 = A2+ (passé composé with être, imparfait, futur proche, comparatives); level 4 = B1- (passé composé vs imparfait, y and en, futur simple, qui/que/où); level 5 = B1 (opinions, subjonctif after il faut que, conditionnel, si + imparfait, connectors); level 6 = solid B1 (concession, dont, plus-que-parfait, reported speech, formal register).
+Use only "choice" and "listen" items, about one third "listen". Add the key "level" (1 to 6) to every item. Order from easiest to hardest.
+${ITEM_SCHEMA}
+Return {"items":[...]}`;
+  try {
+    const items = cleanItems(parseJSON(await askAI(TEST_SYS, [{role:"user", content:prompt}], true, 4000)).items).filter(it => it.level >= 1 && it.level <= 6);
+    if (items.length < 12) throw new Error("INCOMPLETE");
+    if (tok !== PL.token) return;
+    const c = {results:[], idk:true};
+    openPlayer([sectionStep("Test de niveau", `${items.length} questions, from easy to hard. Tap "Je ne sais pas" instead of guessing: it makes the result more accurate.`), ...items.map(it => itemStep(it, c)), levelResultStep(c)]);
+  } catch(e){ if (tok === PL.token) showErr(e, () => $("lvStart").onclick()); }
+};
+const levelResultStep = c => body => {
+  PL.final = true;
+  let place = 6;
+  const rows = UNITS.map(u => {
+    const rs = c.results.filter(x => x.it.level === u.id), ok = rs.filter(x => x.correct).length;
+    return {u, ok, n: rs.length};
+  });
+  for (const row of rows){ if (row.n && row.ok / row.n < 0.67){ place = row.u.id; break; } }
+  PG.placed = {date: new Date().toISOString(), unit: place}; savePG();
+  const u = UNITS[place - 1];
+  body.innerHTML = `<div class="center"><p class="p-kicker">Résultat</p><p class="big-score" style="font-size:2.4rem">Unité ${place}</p><p>${esc(u.title)} (${u.level})</p></div>
+    <div class="results" style="margin-top:18px">${rows.map(row => `<div class="res-row"><span class="name">Unité ${row.u.id} <span class="hint">${row.u.level}</span></span><span class="pct">${row.ok}/${row.n}</span><div class="bar"><i class="${row.n && row.ok/row.n < .67 ? "weak" : ""}" style="width:${row.n ? Math.round(row.ok/row.n*100) : 0}%"></i></div></div>`).join("")}</div>
+    <p class="hint" style="margin-top:14px">${place > 1 ? `Starting at unit ${place} marks the earlier units as skipped. You can still open them any time.` : "Start at the beginning of the path."}</p>`;
+  if (place > 1){
+    foot(`Commencer à l'unité ${place}`, () => {
+      NODES.forEach(n => { if (n.kind !== "exam" && n.unit.id < place){ const r = recOf(n.id); if (r.status !== "done") r.status = "skipped"; } });
+      savePG(); closePlayer(); goTab("parcours"); setTimeout(scrollToCurrent, 300);
+    });
+    skipBtn("Garder ma progression", closePlayer);
+  } else foot("Terminer", () => { closePlayer(); goTab("parcours"); });
+};
+$("vcStart").onclick = async function startVocab(){
+  if (!API.key) return needKey();
+  showLoading("Test de vocabulaire…", "Creating 30 words of different frequencies.");
+  const tok = ++PL.token;
+  const prompt = `Create a French vocabulary size test with 30 items: 6 words from each frequency band.
+band 1 = among the 500 most common French words; band 2 = ranks 500 to 1500; band 3 = ranks 1500 to 3000; band 4 = ranks 3000 to 5000; band 5 = ranks 5000 to 8000.
+Use single words: nouns with their article, verbs in the infinitive, adjectives, adverbs. Avoid words that are identical in English.
+Each item: {"type":"choice","q":"the French word","o":["4 English meanings, one correct, plausible distractors"],"a":index,"band":1 to 5,"point":"the French word","why":"a short French example sentence using the word"}
+Mix the bands randomly. Return {"items":[...]}`;
+  try {
+    const items = cleanItems(parseJSON(await askAI(TEST_SYS, [{role:"user", content:prompt}], true, 4000)).items).filter(it => it.band >= 1 && it.band <= 5);
+    if (items.length < 20) throw new Error("INCOMPLETE");
+    if (tok !== PL.token) return;
+    const c = {results:[], idk:true, kicker:"Que veut dire ce mot ?"};
+    openPlayer([sectionStep("Test de vocabulaire", `${items.length} words. Tap "Je ne sais pas" if you don't know a word: guessing makes the estimate less accurate.`), ...items.map(it => itemStep(it, c)), vocabResultStep(c)]);
+  } catch(e){ if (tok === PL.token) showErr(e, () => $("vcStart").onclick()); }
+};
+const vocabResultStep = c => body => {
+  PL.final = true;
+  const sizes = [500, 1000, 1500, 2000, 3000];
+  let est = 0;
+  const rows = sizes.map((s,i) => {
+    const rs = c.results.filter(x => x.it.band === i+1), ok = rs.filter(x => x.correct).length;
+    if (rs.length) est += s * ok / rs.length;
+    return {i, ok, n: rs.length};
+  });
+  est = Math.round(est / 50) * 50;
+  PG.vocabEst = {date: new Date().toISOString(), est}; savePG();
+  const msg = est < 1000 ? "Around A1 to A2." : est < 2000 ? "Around A2." : est < 3000 ? "Getting close to B1." : "In the B1 range or above.";
+  const labels = ["500 most common","500 to 1,500","1,500 to 3,000","3,000 to 5,000","5,000 to 8,000"];
+  body.innerHTML = `<div class="center"><p class="p-kicker">Estimation</p><p class="big-score" style="font-size:2.6rem">≈ ${est.toLocaleString("fr-FR")} mots</p><p>${msg}</p></div>
+    <div class="results" style="margin-top:18px">${rows.map(r => `<div class="res-row"><span class="name">${labels[r.i]}</span><span class="pct">${r.ok}/${r.n}</span><div class="bar"><i style="width:${r.n ? Math.round(r.ok/r.n*100) : 0}%"></i></div></div>`).join("")}</div>
+    <p class="hint" style="margin-top:14px">B1 is often described as roughly 2,500 to 3,500 words. This is a rough estimate from 30 words, not a precise measure.</p>`;
+  foot("Terminer", closePlayer);
+};
+
 /* =================== DÉMARRAGE =================== */
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 if (isIOS && (navigator.standalone || matchMedia("(display-mode: standalone)").matches)){
@@ -916,6 +1738,10 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
 soSelect(SOUNDS[0].id);
 orReset();
 ecRender();
+renderTests();
+goTab("parcours");
+setTimeout(scrollToCurrent, 400);
+$("keySave").addEventListener("click", renderTree);
 fetchStored("bilan-v1").then(v => {
   if (!v) return;
   saved = v; soRenderChips();
